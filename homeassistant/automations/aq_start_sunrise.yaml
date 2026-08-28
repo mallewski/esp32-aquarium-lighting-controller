@@ -1,0 +1,22 @@
+# Einbindung in configuration.yaml, z.B.:
+#   automation: !include_dir_list automations
+# Jede Datei = eine Automation (ohne führenden Listen-Strich).
+
+id: aq_start_sunrise
+alias: AQ – Sonnenaufgang starten
+description: ''
+triggers:
+  - at: input_datetime.aq_sunrise_time
+    trigger: time
+  - trigger: homeassistant
+    event: start
+conditions:
+  - condition: template
+    value_template: |
+      {{ trigger.platform == 'time' or
+         is_state('input_boolean.aq_sunrise_running', 'on') }}
+actions:
+  - action: script.turn_on
+    data: {}
+    target:
+      entity_id: script.aq_sunrise

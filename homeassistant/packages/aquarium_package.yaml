@@ -1,0 +1,138 @@
+# ============================================================
+# PACKAGE: Aquarium
+# Beleuchtungssteuerung (Sonnenauf-/-untergang, Siesta, Wolken,
+# Dämmerungsphasen)
+#
+# Einbindung in configuration.yaml, z.B.:
+#   homeassistant:
+#     packages: !include_dir_named packages
+# ============================================================
+
+template:
+  - sensor:
+      - name: "Aquarium CH1 Helligkeit"
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {{ (state_attr('light.dimmer_sera_ch1','brightness')|int(0) * 100 / 255)|round(0) }}
+
+      - name: "Aquarium CH2 Helligkeit"
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {{ (state_attr('light.dimmer_sera_ch2','brightness')|int(0) * 100 / 255)|round(0) }}
+
+      - name: "AQ Dimmer CH1 Helligkeit %"
+        unique_id: aq_dimmer_ch1_pct
+        unit_of_measurement: "%"
+        device_class: power_factor
+        state: >
+          {% set b = state_attr('light.dimmer_sera_ch1', 'brightness') %}
+          {{ (b | int(0) * 100 / 255) | round(1) }}
+
+      - name: "AQ Dimmer CH2 Helligkeit %"
+        unique_id: aq_dimmer_ch2_pct
+        unit_of_measurement: "%"
+        device_class: power_factor
+        state: >
+          {% set b = state_attr('light.dimmer_sera_ch2', 'brightness') %}
+          {{ (b | int(0) * 100 / 255) | round(1) }}
+
+input_datetime:
+  aq_sunrise_time:
+    name: Aquarium Sonnenaufgang
+    has_date: false
+    has_time: true
+  aq_sunset_time:
+    name: Aquarium Sonnenuntergang
+    has_date: false
+    has_time: true
+  aq_siesta_start:
+    name: Aquarium Siesta Start
+    has_date: false
+    has_time: true
+  aq_dawn_twilight_until:
+    name: AQ Dämmerungsende Sonnenaufgang
+    has_date: false
+    has_time: true
+  aq_dusk_twilight_until:
+    name: AQ Dämmerungsende Sonnenuntergang
+    has_date: false
+    has_time: true
+
+input_number:
+  aq_base_day_pct:
+    name: Tages-Basishelligkeit %
+    min: 30
+    max: 100
+    step: 1
+    mode: slider
+    #initial: 85
+  aq_siesta_pct:
+    name: Siesta-Helligkeit %
+    min: 3
+    max: 80
+    step: 1
+    mode: slider
+    initial: 45
+  aq_siesta_minutes:
+    name: Siesta Dauer (min)
+    min: 15
+    max: 180
+    step: 5
+    mode: box
+    initial: 60
+  aq_cloud_intensity:
+    name: Wolken-Intensität (0–100)
+    min: 0
+    max: 100
+    step: 5
+    mode: slider
+    initial: 40
+  aq_cloud_duration:
+    name: Wolken Gesamtdauer (min)
+    min: 5
+    max: 240
+    step: 5
+    mode: box
+    initial: 90
+  aq_dawn_twilight_pct:
+    name: AQ Dämmerungshelligkeit Sonnenaufgang
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    initial: 15
+    icon: mdi:brightness-4
+  aq_dusk_twilight_pct:
+    name: AQ Dämmerungshelligkeit Sonnenuntergang
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    initial: 15
+    icon: mdi:brightness-4
+
+input_boolean:
+  aq_clouds_enable:
+    name: Wolken aktiv
+    initial: false
+  aq_siesta_enable:
+    name: Siesta aktiv
+    initial: false
+  aq_weather_link:
+    name: Wetterabhängige Beleuchtung
+    icon: mdi:weather-partly-rainy
+    initial: false
+  aq_dawn_twilight_enable:
+    name: AQ Dämmerung Sonnenaufgang aktiv
+    icon: mdi:weather-sunset-up
+  aq_dusk_twilight_enable:
+    name: AQ Dämmerung Sonnenuntergang aktiv
+    icon: mdi:weather-sunset-down
+
+#recorder:
+#  include:
+#    entities:
+#      - sensor.aq_dimmer_ch1_helligkeit
+#      - sensor.aq_dimmer_ch2_helligkeit

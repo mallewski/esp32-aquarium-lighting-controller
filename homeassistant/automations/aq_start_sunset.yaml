@@ -1,0 +1,22 @@
+id: aq_start_sunset
+alias: AQ – Sonnenuntergang starten
+triggers:
+  - at: input_datetime.aq_sunset_time
+    trigger: time
+  - trigger: homeassistant
+    event: start
+conditions:
+  - condition: template
+    value_template: |
+      {{ trigger.platform == 'time' or
+         is_state('input_boolean.aq_sunset_running', 'on') }}
+actions:
+  - target:
+      entity_id: script.aq_sunset
+    action: script.turn_on
+  - target:
+      entity_id: script.aq_clouds_dynamic
+    action: script.turn_off
+  - target:
+      entity_id: input_boolean.aq_clouds_enable
+    action: input_boolean.turn_off

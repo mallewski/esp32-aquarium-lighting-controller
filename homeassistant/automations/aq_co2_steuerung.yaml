@@ -1,0 +1,91 @@
+id: '1769187725613'
+alias: Aquarium CO2 Steuerung
+description: >
+  Steuert CO2 60 Min vor/nach der eigentlichen Volllicht-Phase (Dämmerungsende)
+  ein/aus. Fällt auf aq_sunrise_time/aq_sunset_time zurück, falls die
+  Dämmerungsphase deaktiviert ist.
+triggers:
+  - value_template: >
+      {% set dawn_ext = is_state('input_boolean.aq_dawn_twilight_enable','on') %}
+      {% set base = states('input_datetime.aq_dawn_twilight_until') if dawn_ext
+         else states('input_datetime.aq_sunrise_time') %}
+      {% if base not in ['unknown', 'unavailable'] %}
+        {% set today = now().date() %}
+        {% set base_dt = today.strftime('%Y-%m-%d') + ' ' + base %}
+        {% set co2_on_time = (as_datetime(base_dt) - timedelta(minutes=60)).strftime('%H:%M:%S') %}
+        {{ now().strftime('%H:%M:%S') == co2_on_time }}
+      {% else %}
+        false
+      {% endif %}
+    id: co2_on
+    trigger: template
+  - value_template: >
+      {% set dusk_ext = is_state('input_boolean.aq_dusk_twilight_enable','on') %}
+      {% set base = states('input_datetime.aq_dusk_twilight_until') if dusk_ext
+         else states('input_datetime.aq_sunset_time') %}
+      {% if base not in ['unknown', 'unavailable'] %}
+        {% set today = now().date() %}
+        {% set base_dt = today.strftime('%Y-%m-%d') + ' ' + base %}
+        {% set co2_off_time = (as_datetime(base_dt) + timedelta(minutes=60)).strftime('%H:%M:%S') %}
+        {{ now().strftime('%H:%M:%S') == co2_off_time }}
+      {% else %}
+        false
+      {% endif %}
+    id: co2_off
+    trigger: template
+  - event: start
+    id: restart
+    trigger: homeassistant
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: co2_on
+        sequence:
+          - target:
+              entity_id: switch.tretakt_aquarium_co2
+            action: switch.turn_on
+      - conditions:
+          - condition: trigger
+            id: co2_off
+        sequence:
+          - target:
+              entity_id: switch.tretakt_aquarium_co2
+            action: switch.turn_off
+      - conditions:
+          - condition: trigger
+            id: restart
+        sequence:
+          - delay: 00:00:30
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: >
+                      {% set dawn_ext = is_state('input_boolean.aq_dawn_twilight_enable','on') %}
+                      {% set dusk_ext = is_state('input_boolean.aq_dusk_twilight_enable','on') %}
+                      {% set base_on = states('input_datetime.aq_dawn_twilight_until') if dawn_ext
+                         else states('input_datetime.aq_sunrise_time') %}
+                      {% set base_off = states('input_datetime.aq_dusk_twilight_until') if dusk_ext
+                         else states('input_datetime.aq_sunset_time') %}
+                      {% if base_on not in ['unknown', 'unavailable'] and base_off not in ['unknown', 'unavailable'] %}
+                        {% set today = now().date() %}
+                        {% set base_on_dt = today.strftime('%Y-%m-%d') + ' ' + base_on %}
+                        {% set base_off_dt = today.strftime('%Y-%m-%d') + ' ' + base_off %}
+                        {% set co2_on = (as_datetime(base_on_dt) - timedelta(minutes=60)).time() %}
+                        {% set co2_off = (as_datetime(base_off_dt) + timedelta(minutes=60)).time() %}
+                        {% set now_time = now().time() %}
+                        {{ co2_on <= now_time < co2_off }}
+                      {% else %}
+                        false
+                      {% endif %}
+                sequence:
+                  - target:
+                      entity_id: switch.tretakt_aquarium_co2
+                    action: switch.turn_on
+            default:
+              - action: switch.turn_off
+                target:
+                  entity_id:
+                    - switch.tretakt_aquarium_co2
+                data: {}
+mode: single

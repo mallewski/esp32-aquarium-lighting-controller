@@ -1,0 +1,131 @@
+# Einbindung in configuration.yaml, z.B.:
+#   script: !include_dir_named scripts
+# Dateiname (aq_sunrise) wird zur script.aq_sunrise Entity-ID.
+
+alias: AQ Sonnenaufgang
+mode: restart
+sequence:
+  - variables:
+      max_pct: '{{ states(''input_number.aq_base_day_pct'')|int(80) }}'
+      step_delay: 20
+      step_size: 1
+      ch2_lead: 5
+      dawn_ext: "{{ is_state('input_boolean.aq_dawn_twilight_enable','on') }}"
+      dawn_pause_pct: "{{ states('input_number.aq_dawn_twilight_pct')|int(15) }}"
+      dawn_until: "{{ states('input_datetime.aq_dawn_twilight_until') }}"
+      ch2_current: >
+        {{ (state_attr('light.dimmer_sera_ch2','brightness')|int(0) * 100 /
+        255)|int }}
+      ch1_current: >
+        {{ [1, (state_attr('light.dimmer_sera_ch1','brightness')|int(0) * 100 /
+        255)|int] | max
+           if is_state('light.dimmer_sera_ch1','on') else 0 }}
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.aq_sunrise_running
+  - data:
+      name: Aquarium
+      message: >
+        Sonnenaufgang gestartet (max {{ max_pct }} %, CH2 bei {{ ch2_current
+        }}%, CH1 bei {{ ch1_current }}%{{ ', Dämmerung bis ' ~ dawn_until if
+        dawn_ext else '' }})
+    action: logbook.log
+  - parallel:
+      - sequence:
+          - if:
+              - condition: template
+                value_template: '{{ is_state(''light.dimmer_sera_ch2'',''off'') }}'
+            then:
+              - target:
+                  entity_id: light.dimmer_sera_ch2
+                data:
+                  brightness_pct: 1
+                  transition: 5
+                action: light.turn_on
+              - delay: '00:00:05'
+          - if:
+              - condition: template
+                value_template: '{{ dawn_ext }}'
+            then:
+              - repeat:
+                  while:
+                    - condition: template
+                      value_template: >
+                        {{ (state_attr('light.dimmer_sera_ch2','brightness')|int(0)
+                        * 100 / 255) < dawn_pause_pct and
+                        states('light.dimmer_sera_ch2') not in
+                        ['off','unavailable'] }}
+                  sequence:
+                    - target:
+                        entity_id: light.dimmer_sera_ch2
+                      data:
+                        brightness_step_pct: '{{ step_size }}'
+                        transition: '{{ step_delay }}'
+                      action: light.turn_on
+                    - delay:
+                        seconds: '{{ step_delay }}'
+              - data:
+                  name: Aquarium
+                  message: >
+                    Dämmerung: CH2 hält bei {{ dawn_pause_pct }}% bis {{
+                    dawn_until }}
+                action: logbook.log
+              - wait_template: '{{ now() >= today_at(dawn_until) }}'
+          - repeat:
+              while:
+                - condition: template
+                  value_template: >
+                    {{ (state_attr('light.dimmer_sera_ch2','brightness')|int(0)
+                    * 100 / 255) < max_pct and states('light.dimmer_sera_ch2')
+                    not in ['off','unavailable'] }}
+              sequence:
+                - target:
+                    entity_id: light.dimmer_sera_ch2
+                  data:
+                    brightness_step_pct: '{{ step_size }}'
+                    transition: '{{ step_delay }}'
+                  action: light.turn_on
+                - delay:
+                    seconds: '{{ step_delay }}'
+      - sequence:
+          - wait_template: >
+              {{ ( (state_attr('light.dimmer_sera_ch2','brightness')|int(0) *
+              100 / 255)
+                   >= (([1, (state_attr('light.dimmer_sera_ch1','brightness')|int(0) * 100 / 255)|int] | max
+                        if is_state('light.dimmer_sera_ch1','on') else 0)) + ch2_lead
+                   or (state_attr('light.dimmer_sera_ch2','brightness')|int(0) * 100 / 255) >= max_pct )
+                 and ( not dawn_ext or now() >= today_at(dawn_until) ) }}
+          - if:
+              - condition: template
+                value_template: '{{ is_state(''light.dimmer_sera_ch1'',''off'') }}'
+            then:
+              - target:
+                  entity_id: light.dimmer_sera_ch1
+                data:
+                  brightness_pct: 1
+                  transition: 5
+                action: light.turn_on
+              - delay: '00:00:05'
+          - repeat:
+              while:
+                - condition: template
+                  value_template: >
+                    {{ (state_attr('light.dimmer_sera_ch1','brightness')|int(0)
+                    * 100 / 255) < max_pct and states('light.dimmer_sera_ch1')
+                    not in ['off','unavailable'] }}
+              sequence:
+                - target:
+                    entity_id: light.dimmer_sera_ch1
+                  data:
+                    brightness_step_pct: '{{ step_size }}'
+                    transition: '{{ step_delay }}'
+                  action: light.turn_on
+                - delay:
+                    seconds: '{{ step_delay }}'
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.aq_sunrise_running
+  - data:
+      name: Aquarium
+      message: Sonnenaufgang abgeschlossen ({{ max_pct }} % erreicht)
+    action: logbook.log

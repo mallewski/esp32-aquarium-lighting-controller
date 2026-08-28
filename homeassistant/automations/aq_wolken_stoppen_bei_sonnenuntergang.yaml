@@ -1,0 +1,13 @@
+id: '1762811775042'
+alias: AQ Wolken automatisch stoppen bei Sonnenuntergang
+description: ''
+triggers:
+  - at: input_datetime.aq_sunset_time
+    trigger: time
+actions:
+  - target:
+      entity_id: script.aq_clouds_dynamic
+    action: script.turn_off
+  - target:
+      entity_id: input_boolean.aq_clouds_enable
+    action: input_boolean.turn_off

@@ -1,0 +1,20 @@
+# HINWEIS: Ruft script.aq_weather_link_update auf, dessen Inhalt mir nie
+# gezeigt wurde. Siehe homeassistant/scripts/TODO_missing_scripts.md.
+
+id: '1762062373093'
+alias: AQ Wetterkopplung automatisch
+description: ''
+triggers:
+  - entity_id: weather.tholey
+    trigger: state
+  - hours: /2
+    trigger: time_pattern
+conditions:
+  - condition: state
+    entity_id: input_boolean.aq_weather_link
+    state: 'on'
+  - condition: time
+    after: 07:00:00
+    before: '20:00:00'
+actions:
+  - action: script.aq_weather_link_update

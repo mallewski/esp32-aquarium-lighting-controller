@@ -1,0 +1,136 @@
+esphome:
+  name: aquarium-steuerung
+  friendly_name: Aquarium Steuerung
+  min_version: 2026.6.0
+  #on_boot:
+    ## Optionales Anti-Zucken: kurz nach dem Boot das Licht sicher ausfahren
+    #priority: -20
+    #then:
+    #  - delay: 200ms
+    #  - light.turn_off:
+    #      id: sera_ch1
+    #      transition_length: 0.5s
+    #  - light.turn_off:
+    #      id: sera_ch2
+    #      transition_length: 0.5s
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    # version: 5.5.1
+  watchdog_timeout: 10s
+
+# Logs auf der seriellen Konsole
+logger:
+
+# Native API zu Home Assistant
+api:
+  encryption:
+    key: !secret aquarium_steuerung__api_encryption_key
+
+# OTA-Update
+ota:
+  - platform: esphome
+    password: !secret aquarium_steuerung__ota_password
+
+# WLAN
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: NONE
+  post_connect_roaming: false
+  ap:
+    ssid: "Dimmer Fallback Hotspot"
+    password: !secret aquarium_steuerung__ap_password
+  # ACHTUNG: An dein eigenes Netz anpassen, nicht 1:1 übernehmen.
+  manual_ip:
+    static_ip: 192.168.2.5
+    gateway: 192.168.2.1
+    subnet: 255.255.255.0
+    dns1: 192.168.2.1
+    dns2: 8.8.8.8
+
+captive_portal:
+
+# (Optional) kleines Test-Webinterface
+# SICHERHEITSHINWEIS: ohne 'auth:' ist dieses Interface im lokalen Netz
+# ungeschützt erreichbar. Für produktiven Einsatz Basic-Auth ergänzen:
+# web_server:
+#   port: 80
+#   auth:
+#     username: !secret aquarium_steuerung__web_user
+#     password: !secret aquarium_steuerung__web_password
+web_server:
+  port: 80
+
+# ---------- PWM-Ausgang & Light-Entity (Variante A) ----------
+# Verdrahtung dazu (siehe docs/pinout.md für vollständige Tabelle):
+#   GPIO18 → 220 Ω → Gate IRLZ44N (Kanal 1)
+#   GPIO19 → 220 Ω → Gate IRLZ44N (Kanal 2)
+#   Gate → 10 kΩ → GND
+#   Source → GND
+#   Drain → LED- (L−)
+#   +20 V → LED+ (L+)
+#   TVS P6KE33A parallel zur LED (K an L+, A an L−) — Bauteil auch in
+#   README-Komponentenliste ergänzen, aktuell nur hier dokumentiert.
+
+output:
+  # Roh-PWM-Ausgang
+  - platform: ledc
+    pin: GPIO18
+    id: sera_led_pwm_1
+    frequency: 1000 Hz
+  - platform: ledc
+    pin: GPIO19
+    id: sera_led_pwm_2
+    frequency: 1000 Hz
+
+light:
+  - platform: monochromatic
+    name: "Sera Ch1"
+    id: sera_ch1
+    output: sera_led_pwm_1
+    default_transition_length: 5s
+    gamma_correct: 2.4       # Auflösung der Kurve im Anfangsbereich.
+    restore_mode: RESTORE_DEFAULT_OFF  # nach Neustart bleibt das Licht aus
+  - platform: monochromatic
+    name: "Sera Ch2"
+    id: sera_ch2
+    output: sera_led_pwm_2
+    default_transition_length: 5s
+    gamma_correct: 2.4       # Auflösung der Kurve im Anfangsbereich.
+    restore_mode: RESTORE_DEFAULT_OFF  # nach Neustart bleibt das Licht aus
+
+# DS18B20 Wassertemperatursensor.
+# WICHTIG: 4.7 kΩ Pull-up-Widerstand zwischen Data-Pin (GPIO4) und
+# 3.3V/VCC einbauen — DS18B20 braucht diesen zwingend, war bisher nicht
+# in der Verdrahtungsdokumentation enthalten.
+one_wire:
+  - platform: gpio
+    id: bus_a
+    pin: GPIO4
+
+sensor:
+  - platform: dallas_temp
+    one_wire_id: bus_a
+    name: "Wassertemperatur"
+    # 5s war unnötig aggressiv für eine Wassertemperatur, die sich
+    # nicht sekündlich ändert. 30s spart WLAN-/CPU-Last.
+    update_interval: 30s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 5
+          send_every: 1
+  - platform: debug
+    free:
+      name: "ESP Heap Free"
+  - platform: wifi_signal
+    name: "WLAN Signalstärke"
+    update_interval: 30s
+
+debug:
+text_sensor:
+  - platform: debug
+    reset_reason:
+      name: "ESP Reset Reason"

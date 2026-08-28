@@ -1,0 +1,39 @@
+# HINWEIS: In deiner Installation existiert zusätzlich eine Entity
+# script.aq_siesta (siehe Screenshot vom 28.08.), deren Inhalt mir nie
+# gezeigt wurde. Diese Automation enthält die Siesta-Logik aktuell
+# inline statt über einen Script-Aufruf — ggf. bei Gelegenheit
+# vereinheitlichen (in script.aq_siesta auslagern, damit die Logik nur
+# an einer Stelle gepflegt werden muss).
+
+id: aq_start_siesta
+alias: AQ – Siesta starten
+trigger:
+  - platform: time
+    at: input_datetime.aq_siesta_start
+condition:
+  - condition: state
+    entity_id: input_boolean.aq_siesta_enable
+    state: 'on'
+action:
+  - variables:
+      siesta_pct: '{{ states(''input_number.aq_siesta_pct'')|int(45) }}'
+      siesta_min: '{{ states(''input_number.aq_siesta_minutes'')|int(60) }}'
+      base_pct: '{{ states(''input_number.aq_base_day_pct'')|int(80) }}'
+  - service: light.turn_on
+    target:
+      entity_id:
+        - light.dimmer_sera_ch1
+        - light.dimmer_sera_ch2
+    data:
+      brightness_pct: '{{ siesta_pct }}'
+      transition: 20
+  - delay:
+      minutes: '{{ siesta_min }}'
+  - service: light.turn_on
+    target:
+      entity_id:
+        - light.dimmer_sera_ch1
+        - light.dimmer_sera_ch2
+    data:
+      brightness_pct: '{{ base_pct }}'
+      transition: 20

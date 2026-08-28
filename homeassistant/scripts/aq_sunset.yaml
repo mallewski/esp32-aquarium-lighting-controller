@@ -1,0 +1,112 @@
+alias: AQ Sonnenuntergang
+mode: restart
+sequence:
+  - variables:
+      min_pct: 0
+      step_delay: 20
+      step_size: -1
+      ch1_lead: 5
+      dusk_ext: "{{ is_state('input_boolean.aq_dusk_twilight_enable','on') }}"
+      dusk_pause_pct: "{{ states('input_number.aq_dusk_twilight_pct')|int(15) }}"
+      dusk_until: "{{ states('input_datetime.aq_dusk_twilight_until') }}"
+      ch1_current: >
+        {{ (state_attr('light.dimmer_sera_ch1','brightness')|int(0) * 100 /
+        255)|int
+           if is_state('light.dimmer_sera_ch1','on') else 0 }}
+      ch2_current: >
+        {{ (state_attr('light.dimmer_sera_ch2','brightness')|int(0) * 100 /
+        255)|int
+           if is_state('light.dimmer_sera_ch2','on') else 0 }}
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.aq_sunset_running
+  - data:
+      name: Aquarium
+      message: >
+        Sonnenuntergang gestartet (CH1 bei {{ ch1_current }}%, CH2 bei {{
+        ch2_current }}%{{ ', Dämmerung bis ' ~ dusk_until if dusk_ext else ''
+        }})
+    action: logbook.log
+  - parallel:
+      - sequence:
+          - repeat:
+              while:
+                - condition: template
+                  value_template: >
+                    {{ (state_attr('light.dimmer_sera_ch1','brightness')|int(0)
+                    * 100 / 255) > min_pct and
+                    is_state('light.dimmer_sera_ch1','on') }}
+              sequence:
+                - target:
+                    entity_id: light.dimmer_sera_ch1
+                  data:
+                    brightness_step_pct: '{{ step_size }}'
+                    transition: '{{ step_delay }}'
+                  action: light.turn_on
+                - delay:
+                    seconds: '{{ step_delay }}'
+      - sequence:
+          - wait_template: >
+              {{ ((state_attr('light.dimmer_sera_ch1','brightness')|int(0) * 100
+              / 255)
+                  if is_state('light.dimmer_sera_ch1','on') else 0)
+              <= ((state_attr('light.dimmer_sera_ch2','brightness')|int(0) * 100
+              / 255)
+                  if is_state('light.dimmer_sera_ch2','on') else 0) - ch1_lead }}
+          - if:
+              - condition: template
+                value_template: '{{ dusk_ext }}'
+            then:
+              - repeat:
+                  while:
+                    - condition: template
+                      value_template: >
+                        {{ (state_attr('light.dimmer_sera_ch2','brightness')|int(0)
+                        * 100 / 255) > dusk_pause_pct and
+                        is_state('light.dimmer_sera_ch2','on') }}
+                  sequence:
+                    - target:
+                        entity_id: light.dimmer_sera_ch2
+                      data:
+                        brightness_step_pct: '{{ step_size }}'
+                        transition: '{{ step_delay }}'
+                      action: light.turn_on
+                    - delay:
+                        seconds: '{{ step_delay }}'
+              - data:
+                  name: Aquarium
+                  message: >
+                    Dämmerung: CH2 hält bei {{ dusk_pause_pct }}% bis {{
+                    dusk_until }}
+                action: logbook.log
+              - wait_template: '{{ now() >= today_at(dusk_until) }}'
+          - repeat:
+              while:
+                - condition: template
+                  value_template: >
+                    {{ (state_attr('light.dimmer_sera_ch2','brightness')|int(0)
+                    * 100 / 255) > min_pct and
+                    is_state('light.dimmer_sera_ch2','on') }}
+              sequence:
+                - target:
+                    entity_id: light.dimmer_sera_ch2
+                  data:
+                    brightness_step_pct: '{{ step_size }}'
+                    transition: '{{ step_delay }}'
+                  action: light.turn_on
+                - delay:
+                    seconds: '{{ step_delay }}'
+  - target:
+      entity_id:
+        - light.dimmer_sera_ch1
+        - light.dimmer_sera_ch2
+    data:
+      transition: 5
+    action: light.turn_off
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.aq_sunset_running
+  - data:
+      name: Aquarium
+      message: Sonnenuntergang abgeschlossen
+    action: logbook.log
