@@ -154,7 +154,7 @@ This allows reverse engineering of the original dimmer behavior.
 
 ## Extending the Platform
 
-The ESP32 has plenty of spare GPIOs, I2C, and processing headroom left, so it's a reasonable hub for more than just lighting. Some ideas that would fit well, roughly ordered by ease of implementation:
+The ESP32 has plenty of spare GPIOs, I2C, and processing headroom left, so it's a reasonable hub for more than just lighting. The water temperature sensor (DS18B20) already implemented in `esphome/aquarium-steuerung.yaml` (see the `one_wire:` and `sensor:` blocks) is a working template for this — adding another sensor is largely a matter of following the same pattern. Some ideas that would fit well, roughly ordered by ease of implementation:
 
 - **Light measurement (easy, cheap):** A BH1750 I2C lux sensor (~€2, native ESPHome component) gives you a real-time readout of what the tank is actually receiving, useful for sanity-checking the dimming curve or catching a failing LED tube. Note this measures lux, not PAR/µmol — a proper quantum PAR meter is a different (and much pricier) class of sensor, but lux is a fine relative indicator for drift-detection.
 
@@ -164,7 +164,7 @@ The ESP32 has plenty of spare GPIOs, I2C, and processing headroom left, so it's 
 
 - **CO2 monitoring (hard, often not worth it):** Cheap NDIR sensors measure CO2 in *air*, not dissolved CO2 in water — not directly usable here. Real aqueous CO2 probes are expensive lab/aquaculture equipment. The common DIY workaround is estimating dissolved CO2 from pH + KH (carbonate hardness) via the standard formula, but that needs a reasonably accurate, well-calibrated pH probe — cheap analog pH modules tend to drift and need frequent recalibration, so treat this as a bigger project, not a quick add-on.
 
-None of the above are implemented in this repo yet — listed here as a starting point for anyone extending the platform.
+None of the ideas above are implemented in this repo yet — listed here as a starting point for anyone extending the platform, using the temperature sensor as the reference pattern.
 
 ---
 

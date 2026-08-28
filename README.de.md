@@ -1,8 +1,6 @@
-# Aquarium-Steuerung
-
 # Aquarium-Beleuchtungssteuerung mit ESP32 & Home Assistant
 
-🇬🇧 [English version](README.md)
+[English version](README.md)
 
 ## Überblick
 
@@ -153,7 +151,7 @@ Damit lässt sich das Verhalten des Original-Dimmers reverse-engineeren.
 
 ## Plattform erweitern
 
-Der ESP32 hat noch reichlich freie GPIOs, I2C und Rechenleistung übrig, ist also ein naheliegender Hub für mehr als nur die Beleuchtung. Ein paar Ideen dazu, grob nach Umsetzungsaufwand sortiert:
+Der ESP32 hat noch reichlich freie GPIOs, I2C und Rechenleistung übrig, ist also ein naheliegender Hub für mehr als nur die Beleuchtung. Der bereits umgesetzte Wassertemperatursensor (DS18B20) in `esphome/aquarium-steuerung.yaml` (siehe die `one_wire:`- und `sensor:`-Blöcke) ist dafür eine funktionierende Vorlage — ein weiterer Sensor lässt sich größtenteils nach demselben Muster ergänzen. Ein paar Ideen dazu, grob nach Umsetzungsaufwand sortiert:
 
 - **Lichtmessung (einfach, günstig):** Ein BH1750 I2C-Lux-Sensor (~2€, natives ESPHome-Component) liefert ein Echtzeit-Signal dazu, was tatsächlich im Becken ankommt — praktisch zum Gegenchecken der Dimmkurve oder um eine ausfallende LED-Röhre frühzeitig zu erkennen. Wichtig: Das misst Lux, nicht PAR/µmol — ein echter PAR-Quantensensor ist eine andere (und deutlich teurere) Geräteklasse, aber Lux reicht gut als relativer Indikator für Drift-Erkennung.
 
@@ -163,7 +161,7 @@ Der ESP32 hat noch reichlich freie GPIOs, I2C und Rechenleistung übrig, ist als
 
 - **CO2-Messung (schwierig, oft nicht lohnend):** Günstige NDIR-Sensoren messen CO2 in **Luft**, nicht gelöstes CO2 im Wasser — hier direkt nicht nutzbar. Echte Aquawasser-CO2-Sonden sind teures Labor-/Aquakultur-Equipment. Der übliche DIY-Workaround ist die Schätzung von gelöstem CO2 aus pH + KH (Karbonathärte) über die Standardformel — braucht aber eine hinreichend genaue, gut kalibrierte pH-Sonde. Günstige analoge pH-Module driften erfahrungsgemäß und brauchen häufige Nachkalibrierung — eher ein größeres Projekt als ein Quick-Add-on.
 
-Nichts davon ist aktuell im Repo umgesetzt — hier nur als Ausgangspunkt für alle, die die Plattform erweitern wollen.
+Keine der Ideen oben ist aktuell im Repo umgesetzt — hier nur als Ausgangspunkt für alle, die die Plattform erweitern wollen, mit dem Temperatursensor als Referenzmuster.
 
 ---
 
