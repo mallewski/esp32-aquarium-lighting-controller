@@ -1,0 +1,59 @@
+alias: AQ Wolkensimulation (dynamisch)
+mode: restart
+sequence:
+  - variables:
+      duration_min: '{{ states(''input_number.aq_cloud_duration'')|int(90) }}'
+      cloudiness: '{{ states(''input_number.aq_cloud_intensity'')|int(40) }}'
+      base_pct: '{{ states(''input_number.aq_base_day_pct'')|int(80) }}'
+      min_pct: 3
+      end_ts: '{{ (now() + timedelta(minutes=duration_min)).timestamp() }}'
+  - service: logbook.log
+    data:
+      name: Aquarium
+      message: Wolkensimulation gestartet
+  - repeat:
+      while:
+        - condition: template
+          value_template: "{{\n  now().timestamp() < end_ts\n  and is_state('input_boolean.aq_clouds_enable','on')\n
+            \ and (is_state('light.dimmer_sera_ch1','on') or is_state('light.dimmer_sera_ch2','on'))\n}}\n"
+      sequence:
+        - variables:
+            big_prob: '{{ (cloudiness / 100) * 0.5 }}'
+            is_big: '{{ (range(1,100)|random) <= (big_prob * 100) }}'
+            dip: '{{ range(25,50)|random if is_big else range(5,20)|random }}'
+            t_down: '{{ range(30,60)|random if is_big else range(8,20)|random }}'
+            t_hold: '{{ range(10,40)|random if is_big else range(3,8)|random }}'
+            t_up: '{{ range(20,45)|random if is_big else range(8,18)|random }}'
+            pause_after: '{{ range(6,18)|random if is_big else range(10,25)|random }}'
+            target_pct: '{{ [base_pct - dip, min_pct]|max }}'
+        - service: light.turn_on
+          target:
+            entity_id:
+              - light.dimmer_sera_ch1
+              - light.dimmer_sera_ch2
+          data:
+            brightness_pct: '{{ target_pct }}'
+            transition: '{{ t_down }}'
+        - delay: '{{ t_down + t_hold }}'
+        - service: light.turn_on
+          target:
+            entity_id:
+              - light.dimmer_sera_ch1
+              - light.dimmer_sera_ch2
+          data:
+            brightness_pct: '{{ base_pct }}'
+            transition: '{{ t_up }}'
+        - delay: '{{ pause_after }}'
+  - condition: or
+    conditions:
+      - condition: state
+        entity_id: light.dimmer_sera_ch1
+        state: 'off'
+      - condition: state
+        entity_id: light.dimmer_sera_ch2
+        state: 'off'
+  - service: logbook.log
+    data:
+      name: Aquarium
+      message: Wolkensimulation beendet oder durch Licht aus gestoppt
+  - stop: Wolkensimulation beendet
