@@ -153,14 +153,18 @@ homeassistant/
   scripts/
     aq_sunrise.yaml
     aq_sunset.yaml
-    TODO_missing_scripts.md   ← aq_clouds_dynamic / aq_weather_link_update fehlen noch
+    aq_clouds_dynamic.yaml
+    aq_siesta.yaml
   automations/
     aq_start_sunrise.yaml
     aq_start_sunset.yaml
     aq_start_siesta.yaml
     aq_wolken_stoppen_bei_sonnenuntergang.yaml
-    aq_wetterkopplung_automatisch.yaml
     aq_co2_steuerung.yaml     ← Beispiel: externe Verbraucher an die Lichtlogik koppeln
+  experimental/
+    README.md                 ← nicht eingebunden, nur Referenz
+    scripts/aq_weather_link_update.yaml
+    automations/aq_wetterkopplung_automatisch.yaml
 
 docs/
   pinout.md                   ← GPIO-Belegung, Verdrahtungsdetails
