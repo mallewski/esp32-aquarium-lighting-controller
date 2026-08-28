@@ -1,0 +1,32 @@
+# HINWEIS: base_pct-Fallback (100) und Transition (30s) weichen von der
+# bisherigen Kopie in automations/aq_start_siesta.yaml (80 / 20s) ab.
+# Bitte gegenprüfen, welcher Wert eigentlich gewollt ist.
+
+alias: AQ Siesta
+mode: restart
+sequence:
+  - condition: state
+    entity_id: input_boolean.aq_siesta_enable
+    state: 'on'
+  - variables:
+      siesta_pct: '{{ states(''input_number.aq_siesta_pct'')|int(45) }}'
+      siesta_min: '{{ states(''input_number.aq_siesta_minutes'')|int(60) }}'
+      base_pct: '{{ states(''input_number.aq_base_day_pct'')|int(100) }}'
+  - service: light.turn_on
+    target:
+      entity_id:
+        - light.dimmer_sera_ch1
+        - light.dimmer_sera_ch2
+    data:
+      brightness_pct: '{{ siesta_pct }}'
+      transition: 30
+  - delay:
+      minutes: '{{ siesta_min }}'
+  - service: light.turn_on
+    target:
+      entity_id:
+        - light.dimmer_sera_ch1
+        - light.dimmer_sera_ch2
+    data:
+      brightness_pct: '{{ base_pct }}'
+      transition: 30
