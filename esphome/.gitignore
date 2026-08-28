@@ -1,2 +1,13 @@
-#macOS
+# macOS
 .DS_Store
+
+# VS Code
+.vscode/
+
+# Logs & temporäre Dateien
+*.log
+*.tmp
+
+# Umgebungsvariablen / Secrets
+.env
+.env.local
