@@ -1,0 +1,18 @@
+# Ruft script.aq_siesta auf (siehe homeassistant/scripts/aq_siesta.yaml)
+# statt die Logik hier zu duplizieren. Vorher enthielt diese Automation
+# eine abweichende Kopie (base_pct Fallback 80/Transition 20s statt
+# 100/30s im echten Script) — bitte prüfen, welche Werte gewollt sind.
+
+id: aq_start_siesta
+alias: AQ – Siesta starten
+trigger:
+  - platform: time
+    at: input_datetime.aq_siesta_start
+condition:
+  - condition: state
+    entity_id: input_boolean.aq_siesta_enable
+    state: 'on'
+action:
+  - action: script.turn_on
+    target:
+      entity_id: script.aq_siesta
