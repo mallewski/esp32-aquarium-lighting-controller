@@ -1,0 +1,74 @@
+# EXPERIMENTELL / NICHT AKTIV GENUTZT
+# Ursprüngliche Idee, wetterabhängige Helligkeit an weather.* zu koppeln.
+# Nicht ausgereift und von mir aktuell als doch nicht wirklich sinnvoll erachtet — bewusst hier
+# als Referenz belassen, aber nicht in configuration.yaml eingebunden.
+
+alias: AQ Wetterkopplung aktualisieren
+mode: restart
+sequence:
+  - condition: state
+    entity_id: input_boolean.aq_weather_link
+    state: 'on'
+  - variables:
+      weather_state: '{{ states(''weather.tholey'') }}'
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: '{{ weather_state == ''sunny'' }}'
+        sequence:
+          - target:
+              entity_id: input_number.aq_cloud_intensity
+            data:
+              value: 10
+            action: input_number.set_value
+          - target:
+              entity_id: input_number.aq_base_day_pct
+            data:
+              value: 90
+            action: input_number.set_value
+      - conditions:
+          - condition: template
+            value_template: '{{ weather_state == ''partlycloudy'' }}'
+        sequence:
+          - target:
+              entity_id: input_number.aq_cloud_intensity
+            data:
+              value: 40
+            action: input_number.set_value
+          - target:
+              entity_id: input_number.aq_base_day_pct
+            data:
+              value: 80
+            action: input_number.set_value
+      - conditions:
+          - condition: template
+            value_template: '{{ weather_state == ''cloudy'' }}'
+        sequence:
+          - target:
+              entity_id: input_number.aq_cloud_intensity
+            data:
+              value: 60
+            action: input_number.set_value
+          - target:
+              entity_id: input_number.aq_base_day_pct
+            data:
+              value: 70
+            action: input_number.set_value
+      - conditions:
+          - condition: template
+            value_template: '{{ weather_state == ''rainy'' }}'
+        sequence:
+          - target:
+              entity_id: input_number.aq_cloud_intensity
+            data:
+              value: 80
+            action: input_number.set_value
+          - target:
+              entity_id: input_number.aq_base_day_pct
+            data:
+              value: 60
+            action: input_number.set_value
+  - data:
+      name: Aquarium
+      message: Wetterkopplung aktualisiert ({{ weather_state }})
+    action: logbook.log
