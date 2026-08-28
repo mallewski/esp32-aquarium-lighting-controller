@@ -1,7 +1,8 @@
 # Aquarium-Steuerung
-ESP32 basierter Dimmer und Temperatursensor für Home Assistant via ESPHome
 
 # Aquarium Lighting Control with ESP32 & Home Assistant
+
+🇩🇪 [Deutsche Version](README.de.md)
 
 ## Overview
 
@@ -24,6 +25,7 @@ The system is designed for Sera LED tubes (20 V DC) but can be adapted to other 
 - Adjustable base brightness and siesta (midday dimming)
 - Full control via Home Assistant UI
 - Fine-grained dimming control using PWM
+- Water temperature monitoring via DS18B20 sensor
 - Weather-based light adaptation *(experimental, not currently in active use — see `homeassistant/experimental/`)*
 
 ---
@@ -37,9 +39,11 @@ The system is designed for Sera LED tubes (20 V DC) but can be adapted to other 
 - Resistors:
   - 220 Ω (gate resistor)
   - 10 kΩ (pull-down)
+- TVS diode P6KE33A (per channel, across the LED — surge protection)
 - Optional: PC817 optocoupler
 - 20 V DC power supply (e.g. Sera 60 W)
 - Sera LED tubes (Daylight / Sunrise)
+- DS18B20 water temperature sensor + 4.7 kΩ pull-up resistor
 
 ### Wiring (per channel)
 
@@ -48,7 +52,10 @@ The system is designed for Sera LED tubes (20 V DC) but can be adapted to other 
 - Source → GND
 - Drain → LED negative (L−)
 - LED positive (L+) → +20 V
+- TVS diode across the LED (K to L+, A to L−)
 - Shared ground between ESP32 and power supply
+
+See `docs/pinout.md` for the full GPIO table and the temperature sensor wiring. A graphical schematic and build photos are still missing — contributions welcome.
 
 ---
 
@@ -147,6 +154,22 @@ This allows reverse engineering of the original dimmer behavior.
 
 ---
 
+## Extending the Platform
+
+The ESP32 has plenty of spare GPIOs, I2C, and processing headroom left, so it's a reasonable hub for more than just lighting. Some ideas that would fit well, roughly ordered by ease of implementation:
+
+- **Light measurement (easy, cheap):** A BH1750 I2C lux sensor (~€2, native ESPHome component) gives you a real-time readout of what the tank is actually receiving, useful for sanity-checking the dimming curve or catching a failing LED tube. Note this measures lux, not PAR/µmol — a proper quantum PAR meter is a different (and much pricier) class of sensor, but lux is a fine relative indicator for drift-detection.
+
+- **Auto feeder (moderate):** A stepper- or servo-driven feeder is a common DIY pattern and ESPHome has native `stepper`/`servo` components, so this integrates cleanly with the existing time-based automation approach used for lighting.
+
+- **Water level / leak sensing (moderate):** Simple float switches or capacitive sensors, straightforward as a `binary_sensor`.
+
+- **CO2 monitoring (hard, often not worth it):** Cheap NDIR sensors measure CO2 in *air*, not dissolved CO2 in water — not directly usable here. Real aqueous CO2 probes are expensive lab/aquaculture equipment. The common DIY workaround is estimating dissolved CO2 from pH + KH (carbonate hardness) via the standard formula, but that needs a reasonably accurate, well-calibrated pH probe — cheap analog pH modules tend to drift and need frequent recalibration, so treat this as a bigger project, not a quick add-on.
+
+None of the above are implemented in this repo yet — listed here as a starting point for anyone extending the platform.
+
+---
+
 ## Known Limitations
 
 - PWM dimming alone does not change LED spectrum
@@ -162,18 +185,20 @@ This allows reverse engineering of the original dimmer behavior.
 - Better replication of original dimmer behavior
 - Additional environmental simulations (e.g. storms)
 - Hardware current control instead of pure PWM
+- Graphical wiring diagram and pinout table (see `docs/pinout.md` — currently text-only, still missing a schematic/photo)
 
 ---
+
 ## Repository Structure
 
 ```
 esphome/
-  aquarium-steuerung.yaml     ← ESPHome-Kerngerät: PWM-Dimmer, Temp-Sensor
-  secrets.yaml.example        ← Vorlage, secrets.yaml selbst NICHT einchecken
+  aquarium-steuerung.yaml     ← ESPHome core device: PWM dimmer, temp sensor
+  secrets.yaml.example        ← template, do NOT commit secrets.yaml itself
 
 homeassistant/
   packages/
-    aquarium_package.yaml     ← input_number/input_boolean/input_datetime, Template-Sensoren
+    aquarium_package.yaml     ← input_number/input_boolean/input_datetime, template sensors
   scripts/
     aq_sunrise.yaml
     aq_sunset.yaml
@@ -185,22 +210,23 @@ homeassistant/
     aq_start_sunset.yaml
     aq_start_siesta.yaml
     aq_wolken_stoppen_bei_sonnenuntergang.yaml
-    aq_co2_steuerung.yaml     ← Beispiel: externe Verbraucher an die Lichtlogik koppeln
+    aq_co2_steuerung.yaml     ← example: coupling an external load to the lighting logic
   experimental/
-    README.md                 ← nicht eingebunden, nur Referenz
+    README.md                 ← not wired in, reference only
     scripts/aq_weather_link_update.yaml
     automations/aq_wetterkopplung_automatisch.yaml
 
 docs/
-  pinout.md                   ← GPIO-Belegung, Verdrahtungsdetails
-  (wiring-diagram.png)        ← TODO: grafisches Schaltbild ergänzen
+  pinout.md                   ← GPIO mapping, wiring details
+  (wiring-diagram.png)        ← TODO: add a graphical schematic
 
 .gitignore
 LICENSE
 README.md
+README.de.md
 ```
 
-### Einbindung in Home Assistant
+### Home Assistant integration
 
 ```yaml
 # configuration.yaml
@@ -211,7 +237,6 @@ script: !include_dir_named scripts
 automation: !include_dir_list automations
 ```
 
-> Die Inhalte unter `homeassistant/` sind **Beispiele/Inspiration**, wie
-> das ESPHome-Dimmer-Setup in einer größeren Beleuchtungslogik genutzt
-> werden kann — kein Teil der Kernfunktionalität des Projekts.
-
+> The contents under `homeassistant/` are **examples/inspiration** for
+> how the ESPHome dimmer setup can be used within a larger lighting
+> logic — not part of the project's core functionality.

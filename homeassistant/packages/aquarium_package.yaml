@@ -1,9 +1,8 @@
 # ============================================================
 # PACKAGE: Aquarium
-# Beleuchtungssteuerung (Sonnenauf-/-untergang, Siesta, Wolken,
-# Dämmerungsphasen)
+# Lighting control (sunrise/sunset, siesta, clouds, twilight phases)
 #
-# Einbindung in configuration.yaml, z.B.:
+# Include in configuration.yaml, e.g.:
 #   homeassistant:
 #     packages: !include_dir_named packages
 # ============================================================

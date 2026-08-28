@@ -1,9 +1,8 @@
-# HINWEIS: referenziert script.aq_weather_link_update, das mittlerweile
-# unter homeassistant/experimental/ liegt und NICHT über die reguläre
-# !include_dir_named scripts/ eingebunden ist. Die Entity existiert dann
-# nicht — script.turn_off darauf ist harmlos (nur ein Log-Warning), aber
-# strenggenommen unnötig. Optional die Zeile entfernen, wenn ihr die
-# Wetterkopplung nicht wieder aktiviert.
+# NOTE: references script.aq_weather_link_update, which now lives under
+# homeassistant/experimental/ and is NOT included via the regular
+# !include_dir_named scripts/. That entity won't exist — script.turn_off
+# on it is harmless (just a log warning), but technically unnecessary.
+# Remove the line if you don't plan to reactivate the weather link.
 
 alias: AQ Alle stoppen
 sequence:

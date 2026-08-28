@@ -43,19 +43,19 @@ wifi:
   ap:
     ssid: "Dimmer Fallback Hotspot"
     password: !secret aquarium_steuerung__ap_password
-  # ACHTUNG: An dein eigenes Netz anpassen, nicht 1:1 übernehmen.
+  # NOTE: adjust to your own network, don't use these values as-is.
   manual_ip:
-    static_ip: <deine-IP>
-    gateway: <deine-gateway-IP>
+    static_ip: 192.168.2.5
+    gateway: 192.168.2.1
     subnet: 255.255.255.0
-    dns1: <dein-dns1>
-    dns2: <dein-dns2>
+    dns1: 192.168.2.1
+    dns2: 8.8.8.8
 
 captive_portal:
 
-# (Optional) kleines Test-Webinterface
-# SICHERHEITSHINWEIS: ohne 'auth:' ist dieses Interface im lokalen Netz
-# ungeschützt erreichbar. Für produktiven Einsatz Basic-Auth ergänzen:
+# (Optional) small test web interface
+# SECURITY NOTE: without 'auth:' this interface is unprotected on the
+# local network. For production use, add basic auth:
 # web_server:
 #   port: 80
 #   auth:
@@ -64,16 +64,16 @@ captive_portal:
 web_server:
   port: 80
 
-# ---------- PWM-Ausgang & Light-Entity (Variante A) ----------
-# Verdrahtung dazu (siehe docs/pinout.md für vollständige Tabelle):
-#   GPIO18 → 220 Ω → Gate IRLZ44N (Kanal 1)
-#   GPIO19 → 220 Ω → Gate IRLZ44N (Kanal 2)
+# ---------- PWM output & light entity (Variant A) ----------
+# Wiring (see docs/pinout.md for the full table):
+#   GPIO18 → 220 Ω → Gate IRLZ44N (channel 1)
+#   GPIO19 → 220 Ω → Gate IRLZ44N (channel 2)
 #   Gate → 10 kΩ → GND
 #   Source → GND
 #   Drain → LED- (L−)
 #   +20 V → LED+ (L+)
-#   TVS P6KE33A parallel zur LED (K an L+, A an L−) — Bauteil auch in
-#   README-Komponentenliste ergänzen, aktuell nur hier dokumentiert.
+#   TVS P6KE33A across the LED (K to L+, A to L−) — also add this part
+#   to the README component list, currently only documented here.
 
 output:
   # Roh-PWM-Ausgang
@@ -102,10 +102,10 @@ light:
     gamma_correct: 2.4       # Auflösung der Kurve im Anfangsbereich.
     restore_mode: RESTORE_DEFAULT_OFF  # nach Neustart bleibt das Licht aus
 
-# DS18B20 Wassertemperatursensor.
-# WICHTIG: 4.7 kΩ Pull-up-Widerstand zwischen Data-Pin (GPIO4) und
-# 3.3V/VCC einbauen — DS18B20 braucht diesen zwingend, war bisher nicht
-# in der Verdrahtungsdokumentation enthalten.
+# DS18B20 water temperature sensor.
+# IMPORTANT: add a 4.7 kΩ pull-up resistor between the data pin (GPIO4)
+# and 3.3V/VCC — the DS18B20 requires this, it was previously missing
+# from the wiring documentation.
 one_wire:
   - platform: gpio
     id: bus_a
@@ -115,8 +115,8 @@ sensor:
   - platform: dallas_temp
     one_wire_id: bus_a
     name: "Wassertemperatur"
-    # 5s war unnötig aggressiv für eine Wassertemperatur, die sich
-    # nicht sekündlich ändert. 30s spart WLAN-/CPU-Last.
+    # 5s was unnecessarily aggressive for water temperature, which
+    # doesn't change second-by-second. 30s saves WiFi/CPU load.
     update_interval: 30s
     filters:
       - sliding_window_moving_average:

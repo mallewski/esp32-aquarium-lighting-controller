@@ -1,6 +1,6 @@
-# Einbindung in configuration.yaml, z.B.:
+# Include in configuration.yaml, e.g.:
 #   script: !include_dir_named scripts
-# Dateiname (aq_sunrise) wird zur script.aq_sunrise Entity-ID.
+# Filename (aq_sunrise) becomes the script.aq_sunrise entity ID.
 
 alias: AQ Sonnenaufgang
 mode: restart

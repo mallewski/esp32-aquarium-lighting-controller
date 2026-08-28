@@ -1,16 +1,16 @@
-# Experimentell / nicht aktiv genutzt
+# Experimental / not actively used
 
-Dateien hier sind bewusst **nicht** über `!include_dir_named` /
-`!include_dir_list` in `configuration.yaml` eingebunden. Sie bleiben als
-Referenz erhalten, laufen aber nicht.
+Files here are intentionally **not** wired into `configuration.yaml` via
+`!include_dir_named` / `!include_dir_list`. They're kept as reference,
+but don't run.
 
 - `scripts/aq_weather_link_update.yaml`
 - `automations/aq_wetterkopplung_automatisch.yaml`
 
-Ursprüngliche Idee: Helligkeit/Wolken-Intensität automatisch an
-`weather.*`-Zustände koppeln. Wurde vom Autor als nicht ausgereift und
-nicht sinnvoll genug für den produktiven Einsatz eingestuft.
+Original idea: automatically couple brightness/cloud intensity to
+`weather.*` states. Deemed not mature enough and not useful enough for
+production use by the author.
 
-Falls das Konzept später wieder aufgegriffen wird: `input_boolean.aq_weather_link`
-existiert weiterhin im Package (`homeassistant/packages/aquarium_package.yaml`)
-als Schalter dafür.
+If this concept gets revisited later: `input_boolean.aq_weather_link`
+still exists in the package
+(`homeassistant/packages/aquarium_package.yaml`) as the toggle for it.

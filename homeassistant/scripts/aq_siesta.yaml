@@ -1,6 +1,6 @@
-# base_pct-Fallback ist auf 90 vereinheitlicht (= initial-Wert von
-# input_number.aq_base_day_pct im Package). Greift nur, falls der Helper
-# ausnahmsweise 'unknown' sein sollte.
+# base_pct fallback is unified to 90 (= initial value of
+# input_number.aq_base_day_pct in the package). Only kicks in if the
+# helper is ever 'unknown'.
 
 alias: AQ Siesta
 mode: restart

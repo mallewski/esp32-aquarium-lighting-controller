@@ -1,6 +1,6 @@
-# Einbindung in configuration.yaml, z.B.:
+# Include in configuration.yaml, e.g.:
 #   automation: !include_dir_list automations
-# Jede Datei = eine Automation (ohne führenden Listen-Strich).
+# Each file = one automation (without a leading list dash).
 
 id: aq_start_sunrise
 alias: AQ – Sonnenaufgang starten

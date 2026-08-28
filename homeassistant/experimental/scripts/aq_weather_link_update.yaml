@@ -1,7 +1,7 @@
-# EXPERIMENTELL / NICHT AKTIV GENUTZT
-# Ursprüngliche Idee, wetterabhängige Helligkeit an weather.* zu koppeln.
-# Nicht ausgereift und von mir aktuell als doch nicht wirklich sinnvoll erachtet — bewusst hier
-# als Referenz belassen, aber nicht in configuration.yaml eingebunden.
+# EXPERIMENTAL / NOT ACTIVELY USED
+# Original idea: couple weather-dependent brightness to weather.*.
+# Deemed not mature and not really useful by the author — intentionally
+# kept here for reference, but not wired into configuration.yaml.
 
 alias: AQ Wetterkopplung aktualisieren
 mode: restart

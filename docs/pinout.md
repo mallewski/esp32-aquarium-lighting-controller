@@ -1,14 +1,14 @@
-# Pinbelegung (ESP32 DevKit)
+# Pinout (ESP32 DevKit)
 
-| GPIO | Funktion | Verbunden mit |
+| GPIO | Function | Connected to |
 |------|----------|----------------|
-| GPIO18 | PWM-Ausgang Kanal 1 | 220 Ω → Gate IRLZ44N #1 |
-| GPIO19 | PWM-Ausgang Kanal 2 | 220 Ω → Gate IRLZ44N #2 |
-| GPIO4 | 1-Wire Bus | DS18B20 Data-Pin (+ 4.7 kΩ Pull-up nach VCC) |
-| GND | Gemeinsame Masse | MOSFET Source, DS18B20 GND, 20V-Netzteil GND |
-| 3.3V | Logikversorgung | DS18B20 VCC, Pull-up-Widerstand |
+| GPIO18 | PWM output channel 1 | 220 Ω → Gate IRLZ44N #1 |
+| GPIO19 | PWM output channel 2 | 220 Ω → Gate IRLZ44N #2 |
+| GPIO4 | 1-Wire bus | DS18B20 data pin (+ 4.7 kΩ pull-up to VCC) |
+| GND | Common ground | MOSFET source, DS18B20 GND, 20V supply GND |
+| 3.3V | Logic supply | DS18B20 VCC, pull-up resistor |
 
-## Pro Kanal (Dimmer)
+## Per channel (dimmer)
 
 ```
 GPIO(18/19) ──[220 Ω]── Gate (IRLZ44N)
@@ -20,12 +20,12 @@ GPIO(18/19) ──[220 Ω]── Gate (IRLZ44N)
 +20V ── LED+ (L+)
 LED- (L−) ── Drain
 
-TVS P6KE33A parallel zur LED:
-  Kathode (K) → LED+ (L+)
+TVS P6KE33A across the LED:
+  Cathode (K) → LED+ (L+)
   Anode  (A) → LED- (L−)
 ```
 
-## Temperatursensor (DS18B20)
+## Temperature sensor (DS18B20)
 
 ```
 VCC (3.3V) ──┬── DS18B20 VCC
@@ -37,10 +37,10 @@ GPIO4 ───────┴── DS18B20 Data
 GND ── DS18B20 GND
 ```
 
-## Offene Punkte / noch zu ergänzen
+## Open items / still to add
 
-- [ ] Grafisches Schaltbild (Fritzing/KiCad) als PNG/SVG hier ablegen
-- [ ] Foto vom realen Aufbau
-- [ ] Angabe: LED-Strom pro Kanal, benötigte MOSFET-Kühlung (ja/nein)
-- [ ] Sicherung/Überstromschutz auf der 20V-Seite dokumentieren
-- [ ] Netzteil-Spezifikation (Sera 60W — welcher Strom max. pro Kanal?)
+- [ ] Graphical schematic (Fritzing/KiCad) as PNG/SVG
+- [ ] Photo of the actual build
+- [ ] LED current per channel, whether MOSFET heatsinking is needed
+- [ ] Document fuse/overcurrent protection on the 20V side
+- [ ] Power supply spec (Sera 60W — max current per channel?)
