@@ -67,7 +67,7 @@ input_number:
     max: 100
     step: 1
     mode: slider
-    #initial: 85
+    initial: 90
   aq_siesta_pct:
     name: Siesta-Helligkeit %
     min: 3
@@ -114,6 +114,14 @@ input_number:
     icon: mdi:brightness-4
 
 input_boolean:
+  aq_sunrise_running:
+    name: Aquarium Sonnenaufgang läuft
+    icon: mdi:weather-sunset-up
+    initial: false
+  aq_sunset_running:
+    name: Aquarium Sonnenuntergang läuft
+    icon: mdi:weather-sunset-down
+    initial: false
   aq_clouds_enable:
     name: Wolken aktiv
     initial: false

@@ -1,0 +1,23 @@
+# HINWEIS: referenziert script.aq_weather_link_update, das mittlerweile
+# unter homeassistant/experimental/ liegt und NICHT über die reguläre
+# !include_dir_named scripts/ eingebunden ist. Die Entity existiert dann
+# nicht — script.turn_off darauf ist harmlos (nur ein Log-Warning), aber
+# strenggenommen unnötig. Optional die Zeile entfernen, wenn ihr die
+# Wetterkopplung nicht wieder aktiviert.
+
+alias: AQ Alle stoppen
+sequence:
+  - action: script.turn_off
+    target:
+      entity_id:
+        - script.aq_sunrise
+        - script.aq_sunset
+        - script.aq_weather_link_update
+        - script.aq_clouds_dynamic
+        - script.aq_siesta
+  - action: input_boolean.turn_off
+    target:
+      entity_id:
+        - input_boolean.aq_sunrise_running
+        - input_boolean.aq_sunset_running
+description: ''
