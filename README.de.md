@@ -18,6 +18,8 @@ Das System ist für Sera-LED-Röhren (20 V DC) ausgelegt, lässt sich aber an an
 - Simulierter Sonnenauf- und -untergang mit einstellbarem Timing
 - Erweiterbare Dämmerungsphase (Dawn/Dusk Twilight): Ein Kanal kann für ein konfigurierbares Zeitfenster auf niedriger Helligkeit gehalten werden, bevor die eigentliche Rampe weiterläuft – so lässt sich die Beobachtungszeit verlängern, ohne die photosynthetisch relevante Lichtphase zu strecken
 - Konfigurierbarer Helligkeits-Vorsprung zwischen den Kanälen bei Sonnenauf-/-untergang
+- Einstellbare Rampen-Geschwindigkeit (Sekunden pro 1%-Helligkeitsschritt), live über die Home-Assistant-Oberfläche änderbar
+- Konfigurierbare Rampen-Geschwindigkeit (Sekunden pro 1%-Helligkeitsschritt), gilt für Haupt- und Dämmerungs-Rampen gleichermaßen
 - Dynamische Wolkensimulation mit randomisierter Intensität und Dauer
 - Einstellbare Basishelligkeit und Siesta (Mittagsabsenkung)
 - Volle Steuerung über die Home-Assistant-Oberfläche
@@ -74,6 +76,8 @@ Die vollständige GPIO-Tabelle und die Sensor-Verdrahtung stehen in `docs/pinout
   - Wolken-Intensität / -Dauer (`aq_cloud_intensity`, `aq_cloud_duration`)
   - Siesta-Helligkeit und -Dauer (`aq_siesta_pct`, `aq_siesta_minutes`)
   - Dämmerungshelligkeit Sonnenauf-/-untergang (`aq_dawn_twilight_pct`, `aq_dusk_twilight_pct`)
+  - Rampen-Geschwindigkeit, Sekunden pro 1%-Schritt (`aq_ramp_step_delay`)
+  - Rampen-Geschwindigkeit, Sekunden pro 1%-Schritt (`aq_ramp_step_delay`)
 
 - `input_datetime`:
   - Trigger-Zeit Sonnenauf-/-untergang (`aq_sunrise_time`, `aq_sunset_time`)
@@ -233,20 +237,6 @@ homeassistant:
 script: !include_dir_named scripts
 automation: !include_dir_list automations
 ```
-
-`script:` und `automation:` erwarten unterschiedliche Datenstrukturen,
-daher die unterschiedlichen Include-Direktiven:
-
-- **Scripts nutzen `!include_dir_named`** — der Inhalt jeder Datei wird
-  zu einem Dict-Eintrag, dessen Key der **Dateiname** ist.
-  `aq_sunrise.yaml` wird automatisch zu `script.aq_sunrise`. Die
-  Dateien dürfen keinen umschließenden Key haben — nur
-  `alias:`/`sequence:`/... direkt auf oberster Ebene.
-- **Automationen nutzen `!include_dir_list`** — der Inhalt jeder Datei
-  wird zu einem Listeneintrag. Die Entity-ID kommt aus dem `id:`-Feld
-  im Dateiinhalt, nicht aus dem Dateinamen — eine Automations-Datei
-  könnte beliebig heißen und würde trotzdem zu der Entity, die ihr
-  `id:` vorgibt. Eine Automation pro Datei, ohne führenden Listenstrich.
 
 > Die Inhalte unter `homeassistant/` sind **Beispiele/Inspiration**, wie
 > das ESPHome-Dimmer-Setup in einer größeren Beleuchtungslogik genutzt

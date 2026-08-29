@@ -21,6 +21,8 @@ The system is designed for Sera LED tubes (20 V DC) but can be adapted to other 
   so you can lengthen observation time without extending the
   photosynthetically relevant light period
 - Configurable brightness lead between channels during sunrise/sunset
+- Adjustable ramp speed (seconds per 1% brightness step), live-tunable via the Home Assistant UI
+- Configurable ramp speed (seconds per 1% brightness step), applies to main and twilight ramps alike
 - Dynamic cloud simulation with randomized intensity and duration
 - Adjustable base brightness and siesta (midday dimming)
 - Full control via Home Assistant UI
@@ -77,6 +79,8 @@ See `docs/pinout.md` for the full GPIO table and the temperature sensor wiring. 
   - Cloud intensity / duration (`aq_cloud_intensity`, `aq_cloud_duration`)
   - Siesta brightness and duration (`aq_siesta_pct`, `aq_siesta_minutes`)
   - Dawn/dusk twilight brightness (`aq_dawn_twilight_pct`, `aq_dusk_twilight_pct`)
+  - Ramp speed, seconds per 1% step (`aq_ramp_step_delay`)
+  - Ramp speed, seconds per 1% step (`aq_ramp_step_delay`)
 
 - `input_datetime`:
   - Sunrise / sunset trigger time (`aq_sunrise_time`, `aq_sunset_time`)
@@ -236,19 +240,6 @@ homeassistant:
 script: !include_dir_named scripts
 automation: !include_dir_list automations
 ```
-
-`script:` and `automation:` expect different data shapes, hence the
-different include directives:
-
-- **Scripts use `!include_dir_named`** — each file's content becomes a
-  dict value, keyed by **filename**. `aq_sunrise.yaml` automatically
-  becomes `script.aq_sunrise`. Files must not have a wrapping key —
-  just `alias:`/`sequence:`/... at the top level.
-- **Automations use `!include_dir_list`** — each file's content
-  becomes one entry in a list. The entity ID comes from the `id:`
-  field inside the file, not from the filename — an automation file
-  could be named anything and would still become the entity its `id:`
-  specifies. One automation per file, without a leading list dash.
 
 > The contents under `homeassistant/` are **examples/inspiration** for
 > how the ESPHome dimmer setup can be used within a larger lighting
