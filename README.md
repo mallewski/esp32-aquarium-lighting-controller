@@ -1,3 +1,5 @@
+# Aquarium-Steuerung
+
 # Aquarium Lighting Control with ESP32 & Home Assistant
 
 [Deutsche Version](README.de.md)
@@ -234,6 +236,19 @@ homeassistant:
 script: !include_dir_named scripts
 automation: !include_dir_list automations
 ```
+
+`script:` and `automation:` expect different data shapes, hence the
+different include directives:
+
+- **Scripts use `!include_dir_named`** — each file's content becomes a
+  dict value, keyed by **filename**. `aq_sunrise.yaml` automatically
+  becomes `script.aq_sunrise`. Files must not have a wrapping key —
+  just `alias:`/`sequence:`/... at the top level.
+- **Automations use `!include_dir_list`** — each file's content
+  becomes one entry in a list. The entity ID comes from the `id:`
+  field inside the file, not from the filename — an automation file
+  could be named anything and would still become the entity its `id:`
+  specifies. One automation per file, without a leading list dash.
 
 > The contents under `homeassistant/` are **examples/inspiration** for
 > how the ESPHome dimmer setup can be used within a larger lighting
