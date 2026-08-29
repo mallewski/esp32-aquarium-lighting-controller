@@ -7,7 +7,7 @@ mode: restart
 sequence:
   - variables:
       max_pct: '{{ states(''input_number.aq_base_day_pct'')|int(80) }}'
-      step_delay: 20
+      step_delay: '{{ states(''input_number.aq_ramp_step_delay'')|int(20) }}'
       step_size: 1
       ch2_lead: 5
       dawn_ext: "{{ is_state('input_boolean.aq_dawn_twilight_enable','on') }}"

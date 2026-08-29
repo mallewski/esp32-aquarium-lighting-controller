@@ -3,7 +3,7 @@ mode: restart
 sequence:
   - variables:
       min_pct: 0
-      step_delay: 20
+      step_delay: '{{ states(''input_number.aq_ramp_step_delay'')|int(20) }}'
       step_size: -1
       ch1_lead: 5
       dusk_ext: "{{ is_state('input_boolean.aq_dusk_twilight_enable','on') }}"

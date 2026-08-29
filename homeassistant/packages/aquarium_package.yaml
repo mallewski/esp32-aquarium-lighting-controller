@@ -111,6 +111,14 @@ input_number:
     unit_of_measurement: '%'
     initial: 15
     icon: mdi:brightness-4
+  aq_ramp_step_delay:
+    name: AQ Rampen-Geschwindigkeit (Sek. pro 1%)
+    min: 5
+    max: 120
+    step: 5
+    unit_of_measurement: 's'
+    initial: 20
+    icon: mdi:speedometer
 
 input_boolean:
   aq_sunrise_running:
