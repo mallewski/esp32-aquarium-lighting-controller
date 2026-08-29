@@ -1,3 +1,5 @@
+# Aquarium-Steuerung
+
 # Aquarium-Beleuchtungssteuerung mit ESP32 & Home Assistant
 
 [English version](README.md)
@@ -231,6 +233,20 @@ homeassistant:
 script: !include_dir_named scripts
 automation: !include_dir_list automations
 ```
+
+`script:` und `automation:` erwarten unterschiedliche Datenstrukturen,
+daher die unterschiedlichen Include-Direktiven:
+
+- **Scripts nutzen `!include_dir_named`** — der Inhalt jeder Datei wird
+  zu einem Dict-Eintrag, dessen Key der **Dateiname** ist.
+  `aq_sunrise.yaml` wird automatisch zu `script.aq_sunrise`. Die
+  Dateien dürfen keinen umschließenden Key haben — nur
+  `alias:`/`sequence:`/... direkt auf oberster Ebene.
+- **Automationen nutzen `!include_dir_list`** — der Inhalt jeder Datei
+  wird zu einem Listeneintrag. Die Entity-ID kommt aus dem `id:`-Feld
+  im Dateiinhalt, nicht aus dem Dateinamen — eine Automations-Datei
+  könnte beliebig heißen und würde trotzdem zu der Entity, die ihr
+  `id:` vorgibt. Eine Automation pro Datei, ohne führenden Listenstrich.
 
 > Die Inhalte unter `homeassistant/` sind **Beispiele/Inspiration**, wie
 > das ESPHome-Dimmer-Setup in einer größeren Beleuchtungslogik genutzt
