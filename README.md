@@ -1,5 +1,3 @@
-# Aquarium-Steuerung
-
 # Aquarium Lighting Control with ESP32 & Home Assistant
 
 [Deutsche Version](README.de.md)
